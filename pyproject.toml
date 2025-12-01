@@ -4,9 +4,30 @@ version = "0.1.0"
 description = "Dishka integration for cyclopts"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["cyclopts>=4.3.0", "dishka>=1.7.2"]
+
+[build-system]
+requires = ["uv_build>=0.8.19,<0.9.0"]
+build-backend = "uv_build"
 
 [dependency-groups]
 lint = ["pre-commit>=4.5.0", "ruff>=0.14.7"]
 tests = ["pytest>=9.0.1"]
 types = ["mypy>=1.19.0"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "TD002", "TD003", "EXE", "ERA", "FIX", "INP001", "UP037"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.extend-per-file-ignores]
+"tests/**/*.py" = ["S101", "S106", "S105", "S311", "PLR2004", "FBT001"]
+"examples/**/*.py" = ["T201", "S101"]
