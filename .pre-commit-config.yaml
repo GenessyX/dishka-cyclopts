@@ -1,0 +1,77 @@
+ci:
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false
+
+exclude: docs|node_modules|migrations|.git|.tox
+fail_fast: false
+
+default_language_version:
+  python: python3.14
+
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^.*\.md$
+      - id: end-of-file-fixer
+        exclude: ^.*snapshots.*$
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
+      - id: detect-aws-credentials
+        args: [--allow-missing-credentials]
+      - id: check-merge-conflict
+      - id: check-yaml
+        name: Check YAML
+        exclude: ^charts/|^helm/
+
+  - repo: https://github.com/ComPWA/taplo-pre-commit
+    rev: v0.9.3
+    hooks:
+      - id: taplo-format
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.2
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.6.10
+    hooks:
+      - id: uv-export
+        args: ["--format", "requirements-txt", "--no-hashes", "--frozen", "--output-file", "requirements.txt", "--group", "tests"]
+        always_run: true
+
+  - repo: https://github.com/GenessyX/validate-mypy-deps
+    rev: v0.1.1
+    hooks:
+      - id: validate-mypy-deps
+        always_run: true
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.18.2'  # Use the sha / tag you want to point at
+    hooks:
+      - id: mypy
+        args: [--strict]
+        additional_dependencies:
+          - colorama==0.4.6 ; sys_platform == 'win32'
+          - iniconfig==2.3.0
+          - packaging==25.0
+          - pluggy==1.6.0
+          - pygments==2.19.2
+          - pytest==9.0.1
+
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.20.0
+    hooks:
+      - id: commitlint
+        stages: [commit-msg]
+        additional_dependencies: ['@commitlint/config-angular']
