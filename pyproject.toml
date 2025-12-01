@@ -1,0 +1,7 @@
+[project]
+name = "dishka-cyclopts"
+version = "0.1.0"
+description = "Dishka integration for cyclopts"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
