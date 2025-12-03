@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Final, TypeVar
 from dishka import AsyncContainer
 from dishka.integrations.base import wrap_injection
 
-from dishka_cyclopts.state import FINALIZERS_KEY, get_current_app, patch_app
+from dishka_cyclopts.state import get_current_app, patch_app
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 CONTAINER_NAME: Final = "dishka_container"
+CLOSED_KEY: Final = "_dishka_closed_containers"
 
 
 def _get_container(_: tuple[Any, ...], __: dict[str, Any]) -> "AsyncContainer":
@@ -56,12 +57,19 @@ def inject(func: "Callable[..., T]") -> "Callable[..., T]":
     async def _closing_wrapper(*args: Any, **kwargs: Any) -> T:  # noqa: ANN401
         app = get_current_app()
         container = None
+        closed_set: set[int] | None = None
         if app is not None:
             container = app.state.get(CONTAINER_NAME)  # type: ignore[attr-defined]
+            closed_set = app.state.setdefault(CLOSED_KEY, set())  # type: ignore[attr-defined]
+        result = await _kwargs_only_wrapper(*args, **kwargs)
         try:
-            return await _kwargs_only_wrapper(*args, **kwargs)
+            return result
         finally:
             if container is not None:
+                if closed_set is not None:
+                    if id(container) in closed_set:
+                        return result  # noqa: B012
+                    closed_set.add(id(container))
                 await container.close()
 
     update_wrapper(_closing_wrapper, injected)
@@ -79,11 +87,7 @@ def inject(func: "Callable[..., T]") -> "Callable[..., T]":
 def setup_dishka(
     container: "AsyncContainer",
     app: "App",
-    *,
-    finalize_container: bool = True,
 ) -> None:
     patch_app()
     app.state[CONTAINER_NAME] = container  # type: ignore[attr-defined]
-    if finalize_container:
-        finalizers = app.state.setdefault(FINALIZERS_KEY, [])  # type: ignore[attr-defined]
-        finalizers.append(container.close)
+    app.state.setdefault(CLOSED_KEY, set())  # type: ignore[attr-defined]
