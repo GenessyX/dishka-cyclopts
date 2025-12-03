@@ -6,6 +6,12 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["cyclopts>=4.3.0", "dishka>=1.7.2"]
 
+[project.urls]
+Homepage = "https://github.com/GenessyX/dishka-cyclopts"
+Repository = "https://github.com/GenessyX/dishka-cyclopts"
+Issues = "https://github.com/GenessyX/dishka-cyclopts/issues"
+Documentation = "https://github.com/GenessyX/dishka-cyclopts#readme"
+
 [build-system]
 requires = ["uv_build>=0.8.19,<0.9.0"]
 build-backend = "uv_build"
